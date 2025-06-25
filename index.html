@@ -1,89 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Casa 3D con cámara ajustable</title>
-    <style> body { margin: 0; } canvas { display: block; } </style>
+  <meta charset="UTF-8">
+  <title>Pantalla dividida con dos modelos 3D</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: row; /* Usa "column" si quieres uno arriba y otro abajo */
+      height: 100vh;
+    }
+
+    model-viewer {
+      flex: 1;
+      height: 100%;
+      border: 1px solid #333;
+    }
+  </style>
 </head>
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script>
-        // Configuración básica
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
 
-        // Iluminación (para ver colores)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(1, 1, 1);
-        scene.add(directionalLight);
+  <!-- Modelo 1 -->
+  <model-viewer
+    src="casa.glb"
+    alt="Primer modelo"
+    auto-rotate
+    camera-controls
+    shadow-intensity="1"
+    ar
+    vr-mode-ui
+    exposure="1"
+    environment-image="neutral"
+  ></model-viewer>
 
-        // Cargar modelo GLB
-        const loader = new THREE.GLTFLoader();
-        loader.load(
-            'nave.glb',
-            (gltf) => {
-                scene.add(gltf.scene);
-                
-                // Ajustar cámara para enfocar el modelo
-                const box = new THREE.Box3().setFromObject(gltf.scene);
-                const center = box.getCenter(new THREE.Vector3());
-                const size = box.getSize(new THREE.Vector3());
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const fov = camera.fov * (Math.PI / 180);
-                const distance = maxDim / (2 * Math.tan(fov / 2));
-                
-                camera.position.copy(center);
-                camera.position.z += distance * 1.5;  // Ajusta distancia
-                camera.lookAt(center);
-                
-                // Guardar posición inicial para reset
-                window.resetCamera = () => {
-                    camera.position.copy(center);
-                    camera.position.z += distance * 1.5;
-                    camera.lookAt(center);
-                };
-                resetCamera();
-            },
-            undefined,
-            (error) => console.error("Error al cargar:", error)
-        );
+  <!-- Modelo 2 -->
+  <model-viewer
+    src="nave.glb"
+    alt="Segundo modelo"
+    auto-rotate
+    camera-controls
+    shadow-intensity="1"
+    ar
+    vr-mode-ui
+    exposure="1"
+    environment-image="neutral"
+  ></model-viewer>
 
-        // Controles para mover la cámara
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-
-        // Botón para resetear cámara
-        const resetBtn = document.createElement('button');
-        resetBtn.textContent = '🔁 Reiniciar vista';
-        resetBtn.style.position = 'absolute';
-        resetBtn.style.top = '16px';
-        resetBtn.style.right = '16px';
-        resetBtn.style.padding = '8px';
-        resetBtn.style.zIndex = '100';
-        document.body.appendChild(resetBtn);
-        resetBtn.onclick = () => resetCamera();
-
-        // Animación
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Redimensionar ventana
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
 </body>
 </html>
